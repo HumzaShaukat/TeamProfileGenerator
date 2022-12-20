@@ -13,7 +13,74 @@ const render = require("./lib/htmlRenderer");
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
+const initialQuestions = [
+    {
+        type: "input",
+        message: "What is the name of the employee you would like to add to the team?",
+        name: "name"
+    },
+    {
+        type: "input",
+        message: "What is the employee's ID?",
+        name: "id"
+    },
+    {
+        type: "input",
+        message: "What is the employee's email address?",
+        name: "email"
+    },
+    {
+        type: "checkbox",
+        message: "What is the role of the employee?",
+        choices: ["Engineer", "Intern", "Manager"],
+        name: "role"
+    }
+]
 
+inquirer.prompt(initialQuestions) 
+
+.then((data)=> {
+    const name = data.name;
+    const email = data.email;
+    const id = data.id;
+    if(data.role == "Engineer") {
+        inquirer.prompt([
+            {
+                type: "input",
+                message: "What is the engineer's GitHub?",
+                name: "github"
+            }
+        ])
+        .then((data)=> {
+            const newEngineer = new Engineer(name,id,email, data.github);
+            console.log(newEngineer);
+        })
+    } else if (data.role == "Intern") {
+        inquirer.prompt([
+            {
+                type: "input",
+                message: "What school is the intern from?",
+                name: "school"
+            }
+        ])
+        .then((data)=> {
+            const newIntern = new Intern(name,id,email, data.school);
+            console.log(newIntern);
+        })
+    } else if (data.role == "Manager") {
+        inquirer.prompt([
+            {
+                type: "input",
+                message: "What is the manager's office number?",
+                name: "officeNumber"
+            }
+        ])
+        .then((data)=> {
+            const newManager = new Manager(name,id,email, data.officeNumber);
+            console.log(newManager);
+        })
+    }
+})
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
