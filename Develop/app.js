@@ -9,11 +9,10 @@ const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
-
-
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
-const initialQuestions = [
+var teamList = [];
+const addEmployee = [
     {
         type: "input",
         message: "What is the name of the employee you would like to add to the team?",
@@ -32,55 +31,113 @@ const initialQuestions = [
     {
         type: "checkbox",
         message: "What is the role of the employee?",
-        choices: ["Engineer", "Intern", "Manager"],
+        choices: ["Engineer", "Intern"],
         name: "role"
     }
 ]
-
-inquirer.prompt(initialQuestions) 
-
-.then((data)=> {
-    const name = data.name;
-    const email = data.email;
-    const id = data.id;
-    if(data.role == "Engineer") {
-        inquirer.prompt([
-            {
-                type: "input",
-                message: "What is the engineer's GitHub?",
-                name: "github"
-            }
-        ])
-        .then((data)=> {
-            const newEngineer = new Engineer(name,id,email, data.github);
-            console.log(newEngineer);
-        })
-    } else if (data.role == "Intern") {
-        inquirer.prompt([
-            {
-                type: "input",
-                message: "What school is the intern from?",
-                name: "school"
-            }
-        ])
-        .then((data)=> {
-            const newIntern = new Intern(name,id,email, data.school);
-            console.log(newIntern);
-        })
-    } else if (data.role == "Manager") {
-        inquirer.prompt([
-            {
-                type: "input",
-                message: "What is the manager's office number?",
-                name: "officeNumber"
-            }
-        ])
-        .then((data)=> {
-            const newManager = new Manager(name,id,email, data.officeNumber);
-            console.log(newManager);
-        })
+const initialQuestions = [ 
+    {
+        type: "input",
+        message: "Please enter the team manager's name.",
+        name: "name"
+    },
+    {
+        type: "input",
+        message: "What is the employee's ID?",
+        name: "id"
+    },
+    {
+        type: "input",
+        message: "What is the employee's email address?",
+        name: "email"
+    },
+    {
+        type: "input",
+        message: "What is the manager's office number?",
+        name: "officeNumber"
+    },
+    {
+        type: "checkbox",
+        message: "Would you like to add another employee after this?",
+        choices: ["Yes", "No"],
+        name: "continue"
     }
-})
+]
+
+function init() {
+    let manager;
+    inquirer.prompt(initialQuestions) 
+    .then((data)=> {
+        const another = data.continue;
+        manager = new Manager(data.name, data. id, data.email, data.officeNumber)
+        teamList.push(manager);
+        addAnother(another);
+    })
+}
+
+function addAnother(input) {
+    if (input == "Yes") {
+        addTeamMember();
+    } else {
+        //render HTML File
+        let newInput = render(teamList);
+        createHTML(newInput);
+    }
+}
+function addTeamMember() {
+    inquirer.prompt(addEmployee) 
+    .then((data)=> {
+        const name = data.name;
+        const email = data.email;
+        const id = data.id;
+        if(data.role == "Engineer") {
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "What is the engineer's GitHub?",
+                    name: "github"
+                },
+                {
+                    type: "checkbox",
+                    message: "Would you like to add another employee after this?",
+                    choices: ["Yes", "No"],
+                    name: "continue"
+                }
+            ])
+            .then((data)=> {
+                another = data.continue;
+                const newEngineer = new Engineer(name, id, email, data.github);
+                teamList.push(newEngineer);
+                addAnother(another);
+            })
+        } else if (data.role == "Intern") {
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "What school is the intern from?",
+                    name: "school"
+                },
+                {
+                    type: "checkbox",
+                    message: "Would you like to add another employee after this?",
+                    choices: ["Yes", "No"],
+                    name: "continue"
+                }
+            ])
+            .then((data)=> {
+                another = data.continue;
+                const newIntern = new Intern(name,id,email, data.school);
+                teamList.push(newIntern);
+                addAnother(another);
+            })
+        }
+    })
+}
+
+function createHTML(textInput) {
+    fs.writeFile("../output/team.html", textInput, (err) =>
+    err ? console.error(err) : console.log('Success!'))
+}
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
@@ -100,3 +157,4 @@ inquirer.prompt(initialQuestions)
 // for further information. Be sure to test out each class and verify it generates an
 // object with the correct structure and methods. This structure will be crucial in order
 // for the provided `render` function to work! ```
+init();
